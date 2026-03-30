@@ -2,10 +2,15 @@ package models;
 
 public class GameState {
     private Tetrimino currentTetrimino;
-    private Tetrimino nextTetrimino = null;
+    private Tetrimino nextTetrimino;
     private int score = 0;
     private  int level = 1;
     private int cantLines = 0;
+
+    public void initialize() {
+        currentTetrimino = Tetrimino.create();
+        nextTetrimino = Tetrimino.create();
+    }
 
     public void changeTetrimino() {
         currentTetrimino = (nextTetrimino != null) ? nextTetrimino : Tetrimino.create();
@@ -15,6 +20,7 @@ public class GameState {
     public void addLines( int cantLines ) {
         this.cantLines += cantLines;
     }
+
     public int getLines() { return cantLines; }
 
     public Tetrimino getCurrentTetrimino() { return currentTetrimino; }

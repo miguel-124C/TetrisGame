@@ -4,7 +4,6 @@ import enums.*;
 
 public class Tetrimino {
     private Coordinate[] cords;
-    private Coordinate[] cordsShadow;
     private final BlockColor color;
     private final TetriminoType tetriminoType;
     private boolean canMove = true;
@@ -36,23 +35,24 @@ public class Tetrimino {
             } else if (direction == Direction.LEFT) {
                 coordinate.x -= 1;
             }
-            // En el tetris no se mueve hacia arriba, pero dejo esta parte por si quiero agregar esa funcionalidad despues
-            // else if (direction == Direction.UP) {
-            //     coordinate.y -= 1;
-            // }
+            // En el tetris no se mueve hacia arriba.
+            // Esta direccion se usa para revertir el movimiento hacia abajo cuando hay colision, por eso se mueve hacia arriba en ese caso.
+            else if (direction == Direction.UP) {
+                coordinate.y -= 1;
+            }
         }
     }
 
-    public void moveToShadow() {
-        if (this.cordsShadow == null) return;
+    //public void moveToShadow() {
+    //    if (this.cordsShadow == null) return;
 
-        Coordinate[] newCords = new Coordinate[this.cordsShadow.length];
-        for (int i = 0; i < cordsShadow.length; i++) {
-            newCords[i] = cordsShadow[i];
-        }
+    //    Coordinate[] newCords = new Coordinate[this.cordsShadow.length];
+    //    for (int i = 0; i < cordsShadow.length; i++) {
+    //        newCords[i] = cordsShadow[i];
+    //    }
 
-        this.cords = newCords;
-    }
+    //    this.cords = newCords;
+    //}
 
     public void rotate() {
         if (!this.canRotate) return;
@@ -87,17 +87,11 @@ public class Tetrimino {
         return -1;
     }
 
-    public void setCords(Coordinate[] cords) { this.cords = cords; }
-
     public Coordinate[] getCords() { return cords; }
 
     public TetriminoType getTetriminoType() { return tetriminoType; }
 
     public BlockColor getColor() { return color; }
-
-    public Coordinate[] getCordsShadow() { return cordsShadow; }
-
-    public void setCordsShadow(Coordinate[] cordsShadow) { this.cordsShadow = cordsShadow; }
 
     public boolean canMove() { return canMove; }
 
