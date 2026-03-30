@@ -33,6 +33,12 @@ public class MusicPlayer {
         }
     }
 
+    public void stop() {
+        if (clip != null && clip.isRunning()) {
+            clip.stop();
+        }
+    }
+
     public Clip getClip() {
         return clip;
     }
