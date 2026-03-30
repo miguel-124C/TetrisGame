@@ -6,7 +6,7 @@
 
 <hr>
 
-Una recreación clásica del juego Tetris desarrollada en Java para escritorio. Este proyecto fue creado para practicar lógica de programación, manejo de gráficos 2D y Programación Orientada a Objetos (POO).
+Una recreación clásica del juego Tetris desarrollada en Java para escritorio. Este proyecto fue creado para practicar lógica de programación, manejo de gráficos 2D y Programación Orientada a Objetos (POO), implementando el patrónn MVC.
 
 <hr>
 
