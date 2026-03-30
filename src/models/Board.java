@@ -10,13 +10,14 @@ public class Board {
     private final int[] vectorRow;
     private final int[] vectorCol;
     private final BlockColor[] vectorValue;
-    private int maxHeightValues;
+    // 
+    private int highestRow;
 
     public Board(int rows, int columns, BlockColor empty) {
         this.ROW = rows;
         this.COL = columns;
         this.empty = empty;
-        this.maxHeightValues = rows;
+        this.highestRow = rows;
 
         vectorRow = new int[ROW * COL];
         vectorCol = new int[ROW * COL];
@@ -59,7 +60,7 @@ public class Board {
 
     public int getCantLines() {
         int cantLines = 0;
-        for (int i = maxHeightValues; i < ROW; i++) {
+        for (int i = highestRow; i < ROW; i++) {
             var cantValues = 0;
             for (int j = 0; j < COL; j++) {
                 if (getValue(i, j) == empty) break;
@@ -76,11 +77,7 @@ public class Board {
     }
 
     public BlockColor getValue(int x, int y) {
-        try {
-            if (!existPos(x, y)) throw new Exception("ERROR: Indices Fuera De Rango");
-        } catch (Exception e) {
-            new RuntimeException(e.getMessage());
-        }
+        if (!existPos(x, y)) return empty;
 
         int lug = search(x, y);
         return (lug != -1) ? vectorValue[lug] : empty;
@@ -102,44 +99,41 @@ public class Board {
 
         // Actualiza el valor del tope donde hay piezas fijas
         var cordUp = tetrimino.getLimitCords(Direction.UP);
-        if (cordUp < maxHeightValues) maxHeightValues = cordUp;
+        if (cordUp < highestRow) highestRow = cordUp;
     }
 
     public boolean hasCollision( Tetrimino tetrimino ) {
-        if ( ROW == tetrimino.getLimitCords(Direction.DOWN) + 1 ) return true;
+        if ( ROW == tetrimino.getLimitCords(Direction.DOWN) ) return true;
 
         for(var cord : tetrimino.getCords()) {
-            if (cord.y + 1 >= ROW) return  true;
-            var valueInDirection = getValue(cord.y + 1, cord.x);
-            if (valueInDirection != empty) return true;
+            var value = getValue(cord.y, cord.x);
+            if (value != empty) return true;
         }
 
         return false;
     }
 
-    public Coordinate[] getCordsShadow(Tetrimino tetrimino) {
-        var coordOrigin = tetrimino.getCords();
-        var isOver = false;
+    public void updateShadowCoordinates(Tetrimino tetrimino) {
+        // REFACTOR: Este método no debería estar en Board, sino en GameController. Además, no debería modificar el tetrimino, sino devolver las coordenadas del shadow.
+        // var coords = tetrimino.getCords();
+        // var isOver = false;
 
-        do {
-            for (var cord : tetrimino.getCords()) {
-                cord.y += 1;
-                if (cord.y >= ROW - 1) isOver = true;
-            }
-        } while (!this.hasCollision(tetrimino) && !isOver);
+        // do {
+        //     for (var cord : coords) {
+        //         cord.y += 1;
+        //         if (cord.y >= ROW - 1) isOver = true;
+        //     }
+        // } while (!this.hasCollision(tetrimino) && !isOver);
 
-        var cordsShadow = tetrimino.getCords();
-        tetrimino.setCords(coordOrigin);
-
-        return cordsShadow;
+        // tetrimino.setCordsShadow(coords);
     }
 
     private void destroyLines(int row) {
         for (int j = 0; j < COL; j++) {
             insert(row, j, empty);
         }
-
-        for (int i = row - 1; i >= maxHeightValues; i--) {
+        // Mueve todas las filas superiores hacia abajo
+        for (int i = row - 1; i >= highestRow; i--) {
             for (int j = 0; j < COL; j++) {
                 var color = getValue(i, j);
                 if (color != empty) {
@@ -153,7 +147,7 @@ public class Board {
     // Direction solo puede ser LEFT o RIGHT
     public boolean canMoveX( Tetrimino tetrimino, Direction direction ) {
         // Validaciones cuando supera el tope donde hay piezas fijas
-        if ( tetrimino.getLimitCords(Direction.DOWN) + 4 >= maxHeightValues ) {
+        if ( tetrimino.getLimitCords(Direction.DOWN) + 4 >= highestRow ) {
             for(var cord : tetrimino.getCords()) {
                 var cordX = (direction == Direction.RIGHT) ? 1 : -1;
                 var valueInDirection = getValue(cord.y, cord.x + cordX);
@@ -166,6 +160,6 @@ public class Board {
         return direction == Direction.RIGHT && tetrimino.getLimitCords(Direction.RIGHT) + 1 < COL;
     }
 
-    public int getMaxHeightValues() { return maxHeightValues; }
+    public int getHighestRow() { return highestRow; }
     public BlockColor getEmpty() { return empty; }
 }
