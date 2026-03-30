@@ -12,9 +12,9 @@ import models.Board;
 import models.GameState;
 
 public class TetrisFrame extends JFrame {
-    private final GameController gameController;
     private final Board board = new Board(20, 10, BlockColor.BLACK);
     private final GameState gameState = new GameState();
+    private final MusicPlayer musicPlayer = new MusicPlayer();
     private JPanel mainPanel;
     private final GamePanel gamePanel;
     private final SidePanel sidePanel;
@@ -29,8 +29,6 @@ public class TetrisFrame extends JFrame {
         // Crear panel lateral con información
         sidePanel = new SidePanel(gameState);
 
-        gameController = new GameController(board, gameState, gamePanel, sidePanel, new MusicPlayer());
-
         // Usar BorderLayout para organizar
         mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -39,7 +37,6 @@ public class TetrisFrame extends JFrame {
         mainPanel.add(gamePanel, BorderLayout.CENTER);
         mainPanel.add(sidePanel, BorderLayout.EAST);
 
-        gameController.addEvents(mainPanel);
         // Asegurar que el panel tenga foco
         addWindowListener(new WindowAdapter() {
             @Override
@@ -52,6 +49,30 @@ public class TetrisFrame extends JFrame {
         pack();
         setLocationRelativeTo(null);
 
-        gameController.startGame();
+        var controller = new GameController(board, gameState, gamePanel, sidePanel, musicPlayer, () -> showGameOverDialog(this));
+        controller.registerKeyBindings(mainPanel);
+        controller.start();
+    }
+
+    public void showGameOverDialog(JFrame parentFrame) {
+        musicPlayer.getClip().close();
+        var confirmDialog = JOptionPane.showConfirmDialog(
+                parentFrame,
+                "¡Game Over!, Try again?",
+                "Game Over",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        switch (confirmDialog) {
+            case JOptionPane.YES_OPTION:
+                // restartGame(parentFrame);
+                break;
+
+            case JOptionPane.NO_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+                parentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                parentFrame.dispose();
+                break;
+        }
     }
 }

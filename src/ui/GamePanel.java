@@ -1,11 +1,9 @@
 package ui;
 
-
 import javax.swing.*;
+import java.awt.*;
 
 import enums.BlockColor;
-
-import java.awt.*;
 
 import models.Board;
 import models.GameState;
@@ -41,7 +39,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void drawGrid(Graphics2D g2d) {
+    private void drawGrid(Graphics2D g2d) {
         g2d.setColor(new Color(40, 40, 40));
         // Líneas verticales
         for (int i = 0; i <= board.getCOL(); i++) {
@@ -56,8 +54,8 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void drawAllPieces(Graphics2D g2d) {
-        for (int i = board.getMaxHeightValues(); i < board.getROW(); i++) {
+    private void drawAllPieces(Graphics2D g2d) {
+        for (int i = board.getHighestRow(); i < board.getROW(); i++) {
             for (int j = 0; j < board.getCOL(); j++) {
                 var value = board.getValue(i, j);
                 if (value != board.getEmpty()) drawBlock( g2d, j, i, BlockColor.getColor( value ) );
@@ -65,14 +63,15 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void drawCurrentTetrimino(Graphics2D g2d, Tetrimino currentTetrimino) {
+    private void drawCurrentTetrimino(Graphics2D g2d, Tetrimino currentTetrimino) {
         var tetriminoColor = currentTetrimino.getColor();
         for (var coord : currentTetrimino.getCords()) {
-            drawBlock(g2d, coord.x, coord.y, BlockColor.getColor(tetriminoColor));   
+            drawBlock(g2d, coord.x, coord.y, BlockColor.getColor(tetriminoColor));
         }
+
     }
 
-    public void drawShadow(Graphics2D g2d, int row, int col) {
+    private void drawShadow(Graphics2D g2d, int row, int col) {
         int x = row * CELL_SIZE;
         int y = col * CELL_SIZE;
         int arc = 3; // Ratio
@@ -104,9 +103,5 @@ public class GamePanel extends JPanel {
         g2d.setColor(color.darker().darker());
         g2d.drawLine(x + CELL_SIZE - 2, y + 1, x + CELL_SIZE - 2, y + CELL_SIZE - 2);
         g2d.drawLine(x + 1, y + CELL_SIZE - 2, x + CELL_SIZE - 2, y + CELL_SIZE - 2);
-    }
-
-    public void updateMatrix() {
-        repaint();
     }
 }
