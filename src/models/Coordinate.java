@@ -1,13 +1,9 @@
 package models;
 
-import enums.Direction;
-
 public class Coordinate {
     public int x = 0;
     public int y = 0;
 
-    // Coordinate max and min for x and y
-    private Direction direction = null;
     private boolean isPivot = false;
 
     public Coordinate(int x, int y) {
@@ -15,16 +11,9 @@ public class Coordinate {
         this.y = y;
     }
 
-    public Coordinate(int x, int y, Direction direction) {
+    public Coordinate(int x, int y, boolean isPivot) {
         this.x = x;
         this.y = y;
-        this.direction = direction;
-    }
-
-    public Coordinate(int x, int y, Direction direction, boolean isPivot) {
-        this.x = x;
-        this.y = y;
-        this.direction = direction;
         this.isPivot = isPivot;
     }
 
@@ -42,10 +31,6 @@ public class Coordinate {
 
         this.x = xAbs;
         this.y = yAbs;
-    }
-
-    public Direction getDirection() {
-        return direction;
     }
 
     public boolean isPivot() {

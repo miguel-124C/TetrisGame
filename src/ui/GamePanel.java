@@ -104,4 +104,11 @@ public class GamePanel extends JPanel {
         g2d.drawLine(x + CELL_SIZE - 2, y + 1, x + CELL_SIZE - 2, y + CELL_SIZE - 2);
         g2d.drawLine(x + 1, y + CELL_SIZE - 2, x + CELL_SIZE - 2, y + CELL_SIZE - 2);
     }
+
+    public void showLevelUP(Graphics2D g2d, int cantLevelUP) {
+        g2d.setColor(Color.YELLOW);
+        g2d.setStroke(null);
+        g2d.drawString("Level UP +" + cantLevelUP, 0, 0);
+    }
+
 }

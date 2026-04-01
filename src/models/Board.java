@@ -29,7 +29,7 @@ public class Board {
     private void initializeMatrix() {
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
-                insert(i, j, BlockColor.BLACK);
+                insert(i, j, this.empty);
             }
         }
     }
