@@ -10,8 +10,10 @@ public class Board {
     private final int[] vectorRow;
     private final int[] vectorCol;
     private final BlockColor[] vectorValue;
-    // 
+
     private int highestRow;
+    private Coordinate[] shadowCoords;
+    private boolean showShadow = true;
 
     public Board(int rows, int columns, BlockColor empty) {
         this.ROW = rows;
@@ -113,21 +115,6 @@ public class Board {
         return false;
     }
 
-    public void updateShadowCoordinates(Tetrimino tetrimino) {
-        // REFACTOR: Este método no debería estar en Board, sino en GameController. Además, no debería modificar el tetrimino, sino devolver las coordenadas del shadow.
-        // var coords = tetrimino.getCords();
-        // var isOver = false;
-
-        // do {
-        //     for (var cord : coords) {
-        //         cord.y += 1;
-        //         if (cord.y >= ROW - 1) isOver = true;
-        //     }
-        // } while (!this.hasCollision(tetrimino) && !isOver);
-
-        // tetrimino.setCordsShadow(coords);
-    }
-
     private void destroyLines(int row) {
         for (int j = 0; j < COL; j++) {
             insert(row, j, empty);
@@ -162,4 +149,12 @@ public class Board {
 
     public int getHighestRow() { return highestRow; }
     public BlockColor getEmpty() { return empty; }
+
+    public Coordinate[] getShadowCoords() { return shadowCoords; }
+    public void setShadowCoords(Coordinate[] coords) {
+        this.shadowCoords = coords;
+    }
+
+    public boolean isShowShadow() { return showShadow; }
+    public void setShowShadow(boolean showShadow) { this.showShadow = showShadow; }
 }

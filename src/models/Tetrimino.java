@@ -18,6 +18,20 @@ public class Tetrimino {
         if (type == TetriminoType.O) this.canRotate = false;
     }
 
+    // Constructor de copia
+    public Tetrimino(Tetrimino original) {
+        this.cords = new Coordinate[original.getCords().length];
+        for (int i = 0; i < original.getCords().length; i++) {
+            var cord = original.getCords()[i];
+            var x = cord.x;
+            var y = cord.y;
+            var direction = cord.getDirection();
+            this.cords[i] = new Coordinate(x, y, direction);
+        }
+        color = original.getColor();
+        tetriminoType = original.getTetriminoType();
+    }
+
     public static Tetrimino create() {
         var type = TetriminoType.random();
         var cords = TetriminoType.getCordsByType(type);
@@ -43,16 +57,9 @@ public class Tetrimino {
         }
     }
 
-    //public void moveToShadow() {
-    //    if (this.cordsShadow == null) return;
-
-    //    Coordinate[] newCords = new Coordinate[this.cordsShadow.length];
-    //    for (int i = 0; i < cordsShadow.length; i++) {
-    //        newCords[i] = cordsShadow[i];
-    //    }
-
-    //    this.cords = newCords;
-    //}
+    public void moveToShadow(Coordinate[] shadowCords) {
+       this.cords = shadowCords;
+    }
 
     public void rotate() {
         if (!this.canRotate) return;

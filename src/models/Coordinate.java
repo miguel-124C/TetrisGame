@@ -10,11 +10,6 @@ public class Coordinate {
     private Direction direction = null;
     private boolean isPivot = false;
 
-    public Coordinate(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
     public Coordinate(int x, int y, Direction direction) {
         this.x = x;
         this.y = y;

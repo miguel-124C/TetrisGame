@@ -69,6 +69,11 @@ public class GamePanel extends JPanel {
             drawBlock(g2d, coord.x, coord.y, BlockColor.getColor(tetriminoColor));
         }
 
+        if (board.getShadowCoords() != null && board.isShowShadow()) {
+            for (var coord : board.getShadowCoords()) {
+                drawShadow(g2d, coord.x, coord.y);
+            }
+        }
     }
 
     private void drawShadow(Graphics2D g2d, int row, int col) {

@@ -10,6 +10,7 @@ import javax.swing.Timer;
 import enums.Direction;
 import helpers.ActionHelper;
 import models.Board;
+import models.Coordinate;
 import models.GameState;
 import models.Tetrimino;
 import ui.*;
@@ -61,7 +62,7 @@ public class GameController {
         im.put(KeyStroke.getKeyStroke("SPACE"), "drop");
 
         // 3. Vincular el ID con la acción lógica
-        am.put("rotate", ActionHelper.create(this::rotate) );
+        am.put("rotate", ActionHelper.create(this::tryRotate) );
         am.put("moveDown", ActionHelper.create(this::moveDown) );
         am.put("moveLeft", ActionHelper.create(this::moveLeft) );
         am.put("moveRight", ActionHelper.create(this::moveRight) );
@@ -79,32 +80,77 @@ public class GameController {
         if (board.hasCollision(currentTetrimino)) {
             currentTetrimino.move(Direction.UP);
             board.insertTetrimino(currentTetrimino);
+            board.setShowShadow(false);
+            board.setShadowCoords(null);
+
             var countLines = board.getCantLines();
             gameState.addLines(countLines);
             gameState.changeTetrimino();
             currentTetrimino = gameState.getCurrentTetrimino();
 
             sidePanel.updatePanel();
+        } else {
+            updatedShadow();
         }
         
         gamePanel.repaint();
         checkGameOver();
     }
 
-    public void rotate() {
-        currentTetrimino.rotate();
+    public Coordinate[] getShadowCoords() {
+        var shadow = new Tetrimino(this.currentTetrimino);
+        var cantDrop = 0;
+
+        while (!board.hasCollision(shadow)) {
+            shadow.move(Direction.DOWN);
+            cantDrop += 1;
+        }
+
+        board.setShowShadow(cantDrop >= 2);
+            
+        shadow.move(Direction.UP);
+        return shadow.getCords();
+    }
+
+    private void tryRotate() {
+        var rotated = new Tetrimino(this.currentTetrimino);
+        rotated.rotate();
+
+        if (!board.hasCollision(rotated)) {
+            this.currentTetrimino.rotate();
+            updatedShadow();
+            gamePanel.repaint();
+        }
     }
 
     public void moveDown() {
         currentTetrimino.move(Direction.DOWN);
-        gameState.setScore(gameState.getScore() + 1);
-        sidePanel.updatePanel();
+
+        if (board.hasCollision(currentTetrimino)) {
+            currentTetrimino.move(Direction.UP);
+            board.insertTetrimino(currentTetrimino);
+            board.setShowShadow(false);
+            board.setShadowCoords(null);
+
+            var countLines = board.getCantLines();
+            gameState.addLines(countLines);
+            gameState.changeTetrimino();
+            currentTetrimino = gameState.getCurrentTetrimino();
+
+            gameState.setScore(gameState.getScore() + 1);
+            sidePanel.updatePanel();
+        } else {
+            updatedShadow();
+        }
+
         gamePanel.repaint();
     }
 
     public void moveLeft() {
         if (board.canMoveX( currentTetrimino, Direction.LEFT )) {
             currentTetrimino.move(Direction.LEFT);
+            updatedShadow();
+
             gamePanel.repaint();
         }
     }
@@ -112,13 +158,28 @@ public class GameController {
     public void moveRight() {
         if (board.canMoveX( currentTetrimino, Direction.RIGHT )) {
             currentTetrimino.move(Direction.RIGHT);
+            updatedShadow();
+
             gamePanel.repaint();
         }
     }
 
     public void drop() {
-        //currentTetrimino.moveToShadow();
+        var shadowCoords = getShadowCoords();
+        currentTetrimino.moveToShadow(shadowCoords);
+
+
+        board.insertTetrimino(currentTetrimino);
+        board.setShowShadow(false);
+        board.setShadowCoords(null);
+
+        var countLines = board.getCantLines();
+        gameState.addLines(countLines);
         gameState.changeTetrimino();
+        currentTetrimino = gameState.getCurrentTetrimino();
+        gameState.setScore(gameState.getScore() + 1);
+        
+        sidePanel.updatePanel();
         gamePanel.repaint();
     }
 
@@ -127,5 +188,10 @@ public class GameController {
             timer.stop();
             onGameOver.run();
         }
+    }
+
+    private void updatedShadow() {
+        var shadowCoords = getShadowCoords();
+        board.setShadowCoords(shadowCoords);
     }
 }
