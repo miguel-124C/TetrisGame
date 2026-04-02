@@ -100,14 +100,17 @@ public class Board {
         }
 
         // Actualiza el valor del tope donde hay piezas fijas
-        var cordUp = tetrimino.getLimitCords(Direction.UP);
+        var cordUp = tetrimino.getCoordMaxBottom();
         if (cordUp < highestRow) highestRow = cordUp;
     }
 
     public boolean hasCollision( Tetrimino tetrimino ) {
-        if ( ROW == tetrimino.getLimitCords(Direction.DOWN) ) return true;
+        if (tetrimino.getCoordMaxTop() > ROW - 1) return true;
 
         for(var cord : tetrimino.getCords()) {
+            // Alguna coordenada se sale de la matriz
+            if (cord.x < 0 || cord.x > COL - 1) return true;
+            // Alguna coordenada sobrepasa a un bloque
             var value = getValue(cord.y, cord.x);
             if (value != empty) return true;
         }
@@ -129,22 +132,6 @@ public class Board {
                 }
             }
         }
-    }
-
-    // Direction solo puede ser LEFT o RIGHT
-    public boolean canMoveX( Tetrimino tetrimino, Direction direction ) {
-        // Validaciones cuando supera el tope donde hay piezas fijas
-        if ( tetrimino.getLimitCords(Direction.DOWN) + 4 >= highestRow ) {
-            for(var cord : tetrimino.getCords()) {
-                var cordX = (direction == Direction.RIGHT) ? 1 : -1;
-                var valueInDirection = getValue(cord.y, cord.x + cordX);
-                if ( valueInDirection != empty ) return false;
-            }
-        }
-
-        // Validaciones cuando no supero el tope donde hay piezas fijas
-        if ( direction == Direction.LEFT && tetrimino.getLimitCords(Direction.LEFT) - 1 >= 0 ) return true;
-        return direction == Direction.RIGHT && tetrimino.getLimitCords(Direction.RIGHT) + 1 < COL;
     }
 
     public int getHighestRow() { return highestRow; }

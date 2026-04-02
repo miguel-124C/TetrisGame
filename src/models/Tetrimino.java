@@ -25,15 +25,13 @@ public class Tetrimino {
             var cord = original.getCords()[i];
             var x = cord.x;
             var y = cord.y;
-            var direction = cord.getDirection();
-            this.cords[i] = new Coordinate(x, y, direction);
+            this.cords[i] = new Coordinate(x, y);
         }
         color = original.getColor();
         tetriminoType = original.getTetriminoType();
     }
 
-    public static Tetrimino create() {
-        var type = TetriminoType.random();
+    public static Tetrimino create(TetriminoType type) {
         var cords = TetriminoType.getCordsByType(type);
         return new Tetrimino(cords, BlockColor.random(), type);
     }
@@ -62,8 +60,6 @@ public class Tetrimino {
     }
 
     public void rotate() {
-        if (!this.canRotate) return;
-
         var pivot = getCoordPivot();
         if (pivot == null) return;
 
@@ -79,19 +75,24 @@ public class Tetrimino {
         return null;
     }
 
-    public int getLimitCords( Direction direction ) {
-        for (var cord : cords) {
-            if (cord.getDirection() == direction)
-                return switch (direction) {
-                    case DOWN -> cord.y;
-                    case LEFT -> cord.x;
-                    case RIGHT -> cord.x;
-                    case UP -> cord.y;
-                    default -> -1;
-                };
+    // Obtiene la coordenada mas cerca a la parte baja de la matriz
+    public int getCoordMaxTop() {
+        int max = Integer.MIN_VALUE;
+        for (var cord : this.cords) {
+            if (cord.y > max) max = cord.y;
         }
 
-        return -1;
+        return max;
+    }
+
+    // Obtiene la coordenada mas cerca a la parte alta de la matriz
+    public int getCoordMaxBottom() {
+        var men = Integer.MAX_VALUE;
+        for (var cord : this.cords) {
+            if (cord.y < men) men = cord.y;
+        }
+
+        return men;
     }
 
     public Coordinate[] getCords() { return cords; }
@@ -104,4 +105,5 @@ public class Tetrimino {
 
     public void setCanMove(boolean canMove) { this.canMove = canMove; }
 
+    public boolean isCanRotate() { return canRotate; }
 }
