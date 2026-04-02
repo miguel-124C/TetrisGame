@@ -9,17 +9,8 @@ import javax.swing.Timer;
 
 import enums.Direction;
 import helpers.ActionHelper;
-import models.Board;
-import models.Coordinate;
-import models.GameState;
-import models.Tetrimino;
+import models.*;
 import ui.*;
-
-// start() crea el Timer y lo arranca.
-
-// Acciones de teclado llaman a métodos del controller que:
-// Intentan mover/rotar sobre copia y validan con board.
-// Actualizan score/lines si corresponde y piden repintado.
 
 public class GameController {
     private final Board board;
@@ -31,6 +22,8 @@ public class GameController {
     private final Timer timer;
 
     private Tetrimino currentTetrimino;
+
+    private int cantDrop;
 
     public GameController(
         Board board, GameState gameState, GamePanel gamePanel,
@@ -63,14 +56,14 @@ public class GameController {
 
         // 3. Vincular el ID con la acción lógica
         am.put("rotate", ActionHelper.create(this::tryRotate) );
-        am.put("moveDown", ActionHelper.create(this::moveDown) );
+        am.put("moveDown", ActionHelper.create(this::softDrop) );
         am.put("moveLeft", ActionHelper.create(this::moveLeft) );
         am.put("moveRight", ActionHelper.create(this::moveRight) );
-        am.put("drop", ActionHelper.create(this::drop) );
+        am.put("drop", ActionHelper.create(this::hardDrop) );
     }
 
     public void start() {
-        musicPlayer.reproduce("assets/tetrisTheme.wav");
+        musicPlayer.reproduce("assets/tetrisTheme.wav", true);
         timer.start();
     }
 
@@ -79,27 +72,16 @@ public class GameController {
 
         if (board.hasCollision(currentTetrimino)) {
             currentTetrimino.move(Direction.UP);
-            board.insertTetrimino(currentTetrimino);
-            board.setShowShadow(false);
-            board.setShadowCoords(null);
-
-            var countLines = board.getCantLines();
-            gameState.addLines(countLines);
-            gameState.changeTetrimino();
-            currentTetrimino = gameState.getCurrentTetrimino();
-
-            sidePanel.updatePanel();
+            curretnTetriminoFinish();
         } else {
             updatedShadow();
         }
-        
-        gamePanel.repaint();
         checkGameOver();
     }
 
     public Coordinate[] getShadowCoords() {
         var shadow = new Tetrimino(this.currentTetrimino);
-        var cantDrop = 0;
+        cantDrop = 0;
 
         while (!board.hasCollision(shadow)) {
             shadow.move(Direction.DOWN);
@@ -113,74 +95,107 @@ public class GameController {
     }
 
     private void tryRotate() {
+        if (!currentTetrimino.isCanRotate()) return;
+
         var rotated = new Tetrimino(this.currentTetrimino);
         rotated.rotate();
 
         if (!board.hasCollision(rotated)) {
             this.currentTetrimino.rotate();
             updatedShadow();
-            gamePanel.repaint();
+            musicPlayer.reproduce("assets/soundEffects/rotate_piece.wav", false);
         }
     }
 
-    public void moveDown() {
+    public void softDrop() {
         currentTetrimino.move(Direction.DOWN);
 
         if (board.hasCollision(currentTetrimino)) {
             currentTetrimino.move(Direction.UP);
-            board.insertTetrimino(currentTetrimino);
-            board.setShowShadow(false);
-            board.setShadowCoords(null);
-
-            var countLines = board.getCantLines();
-            gameState.addLines(countLines);
-            gameState.changeTetrimino();
-            currentTetrimino = gameState.getCurrentTetrimino();
-
-            gameState.setScore(gameState.getScore() + 1);
-            sidePanel.updatePanel();
+            curretnTetriminoFinish();
         } else {
             updatedShadow();
+            musicPlayer.reproduce("assets/soundEffects/move_piece.wav", false);
+            scoreUpdated(1);
         }
-
-        gamePanel.repaint();
     }
 
     public void moveLeft() {
-        if (board.canMoveX( currentTetrimino, Direction.LEFT )) {
+        if (this.canMove( Direction.LEFT )) {
             currentTetrimino.move(Direction.LEFT);
             updatedShadow();
-
-            gamePanel.repaint();
+            musicPlayer.reproduce("assets/soundEffects/move_piece.wav", false);
         }
     }
 
     public void moveRight() {
-        if (board.canMoveX( currentTetrimino, Direction.RIGHT )) {
+        if (this.canMove( Direction.RIGHT )) {
             currentTetrimino.move(Direction.RIGHT);
             updatedShadow();
-
-            gamePanel.repaint();
+            musicPlayer.reproduce("assets/soundEffects/move_piece.wav", false);
         }
     }
 
-    public void drop() {
+    public void hardDrop() {
         var shadowCoords = getShadowCoords();
         currentTetrimino.moveToShadow(shadowCoords);
 
+        scoreUpdated(this.cantDrop * 2);
+        curretnTetriminoFinish();
+        musicPlayer.reproduce("assets/soundEffects/piece_landed.wav", false);
+    }
 
+    private void curretnTetriminoFinish() {
         board.insertTetrimino(currentTetrimino);
         board.setShowShadow(false);
         board.setShadowCoords(null);
 
-        var countLines = board.getCantLines();
-        gameState.addLines(countLines);
+        var numberOfLines = board.getCantLines();
+        gameState.addLines(numberOfLines);
+        calculateScore(numberOfLines);
+        if (gameState.getCantLines() >= gameState.getLevel() * 10 ) {
+            levelUp();
+        }
+
         gameState.changeTetrimino();
         currentTetrimino = gameState.getCurrentTetrimino();
-        gameState.setScore(gameState.getScore() + 1);
-        
+
         sidePanel.updatePanel();
         gamePanel.repaint();
+    }
+
+    private void levelUp() {
+        gameState.addLevel();
+        musicPlayer.reproduce("assets/soundEffects/level_up.wav", false);
+
+        var timeDrop = gameState.getTimeDrop();
+        int timeDropMs = (int) (timeDrop * 1000);
+        timer.setDelay(timeDropMs);
+        // gamePanel.showLevelUP(null, 1);
+    }
+
+    private void calculateScore( int numberOfLines ) {
+        if (numberOfLines == 1) {
+            scoreUpdated(100 * gameState.getLevel());
+        } else if (numberOfLines == 2) {
+            scoreUpdated(300 * gameState.getLevel());
+        } else if (numberOfLines == 3) {
+            scoreUpdated(500 * gameState.getLevel());
+        } else if (numberOfLines == 4) {
+            scoreUpdated(1200 * gameState.getLevel());
+        }
+    }
+
+    private boolean canMove( Direction direction ) {
+        var test = new Tetrimino(this.currentTetrimino);
+        test.move(direction);
+
+        return !this.board.hasCollision(test);
+    }
+
+    private void scoreUpdated(int cantScore) {
+        gameState.addScore(cantScore);
+        sidePanel.updatePanel();
     }
 
     public void checkGameOver() {
@@ -193,5 +208,6 @@ public class GameController {
     private void updatedShadow() {
         var shadowCoords = getShadowCoords();
         board.setShadowCoords(shadowCoords);
+        gamePanel.repaint();
     }
 }
