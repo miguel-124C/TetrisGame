@@ -12,18 +12,16 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 public class MusicPlayer {
     private Clip clip;
 
-    public void reproduce(String pathFile) {
+    public void reproduce(String pathFile, boolean isLoop) {
         try {
             File fileMusic = new File(pathFile);
-            System.out.println("Java está buscando en: " + fileMusic.getAbsolutePath());
 
             if (fileMusic.exists()) {
                 AudioInputStream audioInput = AudioSystem.getAudioInputStream(fileMusic);
                 clip = AudioSystem.getClip();
                 clip.open(audioInput);
-                clip.loop(Clip.LOOP_CONTINUOUSLY);
+                if (isLoop) clip.loop(Clip.LOOP_CONTINUOUSLY);
                 clip.start();
-
             } else {
                 System.out.println("No se encuentra el archivo en la ruta: " + pathFile);
             }

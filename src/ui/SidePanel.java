@@ -39,7 +39,7 @@ public class SidePanel extends JPanel {
         add(createInfoPanel("LEVEL", this.jlabelLevel));
         add(Box.createRigidArea(new Dimension(0, 15)));
         // Panel de líneas
-        this.jlabelLines = new JLabel(String.valueOf(gameState.getLines()), SwingConstants.CENTER);
+        this.jlabelLines = new JLabel(String.valueOf(gameState.getCantLines()), SwingConstants.CENTER);
         add(createInfoPanel("LINES", this.jlabelLines));
         add(Box.createRigidArea(new Dimension(0, 30)));
         // Panel siguiente pieza
@@ -64,7 +64,7 @@ public class SidePanel extends JPanel {
     public void updatePanel() {
         var score = String.valueOf(gameState.getScore());
         var level = String.valueOf(gameState.getLevel());
-        var lines = String.valueOf(gameState.getLines());
+        var lines = String.valueOf(gameState.getCantLines());
 
         jlabelScore.setText( score );
         jlabelLevel.setText( level );
@@ -101,6 +101,9 @@ public class SidePanel extends JPanel {
 
                 var nextPiece = gameState.getNextTetrimino();
                 var cordsNextPiece = TetriminoType.getCordsByType(nextPiece.getTetriminoType());
+                for (var coord : cordsNextPiece) {
+                    coord.x -= 3;
+                }
 
                 int cellSize = 25;
                 int startX = (getWidth() - 3 * cellSize) / 2;
