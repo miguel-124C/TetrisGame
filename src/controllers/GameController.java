@@ -20,6 +20,7 @@ public class GameController {
     private final MusicPlayer musicPlayer;
     private final Runnable onGameOver;
     private final Timer timer;
+    private final String pathSoundEffects = "assets/soundEffects";
 
     private Tetrimino currentTetrimino;
 
@@ -64,6 +65,7 @@ public class GameController {
 
     public void start() {
         musicPlayer.reproduce("assets/tetrisTheme.wav", true);
+        musicPlayer.getClip();
         timer.start();
     }
 
@@ -101,10 +103,24 @@ public class GameController {
         rotated.rotate();
 
         if (!board.hasCollision(rotated)) {
-            this.currentTetrimino.rotate();
-            updatedShadow();
-            musicPlayer.reproduce("assets/soundEffects/rotate_piece.wav", false);
+            rotateTetrimino();
+            return;
         }
+
+        var direction = getDirectionX();
+        var directionToMove = direction == Direction.RIGHT ? Direction.LEFT : Direction.RIGHT;
+        rotated.move(directionToMove);
+
+        if (!board.hasCollision(rotated)) {
+            this.currentTetrimino.move(directionToMove);
+            rotateTetrimino();
+        }
+    }
+
+    private void rotateTetrimino() {
+        this.currentTetrimino.rotate();
+        updatedShadow();
+        musicPlayer.reproduce(pathSoundEffects + "/rotate_piece.wav", false);
     }
 
     public void softDrop() {
@@ -115,7 +131,7 @@ public class GameController {
             curretnTetriminoFinish();
         } else {
             updatedShadow();
-            musicPlayer.reproduce("assets/soundEffects/move_piece.wav", false);
+            musicPlayer.reproduce(pathSoundEffects + "/move_piece.wav", false);
             scoreUpdated(1);
         }
     }
@@ -124,7 +140,7 @@ public class GameController {
         if (this.canMove( Direction.LEFT )) {
             currentTetrimino.move(Direction.LEFT);
             updatedShadow();
-            musicPlayer.reproduce("assets/soundEffects/move_piece.wav", false);
+            musicPlayer.reproduce(pathSoundEffects + "/move_piece.wav", false);
         }
     }
 
@@ -132,7 +148,7 @@ public class GameController {
         if (this.canMove( Direction.RIGHT )) {
             currentTetrimino.move(Direction.RIGHT);
             updatedShadow();
-            musicPlayer.reproduce("assets/soundEffects/move_piece.wav", false);
+            musicPlayer.reproduce(pathSoundEffects + "/move_piece.wav", false);
         }
     }
 
@@ -142,7 +158,7 @@ public class GameController {
 
         scoreUpdated(this.cantDrop * 2);
         curretnTetriminoFinish();
-        musicPlayer.reproduce("assets/soundEffects/piece_landed.wav", false);
+        musicPlayer.reproduce(pathSoundEffects + "/piece_landed.wav", false);
     }
 
     private void curretnTetriminoFinish() {
@@ -166,7 +182,7 @@ public class GameController {
 
     private void levelUp() {
         gameState.addLevel();
-        musicPlayer.reproduce("assets/soundEffects/level_up.wav", false);
+        musicPlayer.reproduce(pathSoundEffects + "/level_up.wav", false);
 
         var timeDrop = gameState.getTimeDrop();
         int timeDropMs = (int) (timeDrop * 1000);
@@ -183,6 +199,7 @@ public class GameController {
             scoreUpdated(500 * gameState.getLevel());
         } else if (numberOfLines == 4) {
             scoreUpdated(1200 * gameState.getLevel());
+            musicPlayer.reproduce(pathSoundEffects + "/tetris_4_lines.wav", false);
         }
     }
 
@@ -203,6 +220,14 @@ public class GameController {
             timer.stop();
             onGameOver.run();
         }
+    }
+
+    private Direction getDirectionX() {
+        var coordMaxLeft = this.currentTetrimino.getCoordMaxLeft();
+        var coordMaxRight = this.currentTetrimino.getCoordMaxRight();
+
+        var difference = (this.board.getCOL() - 1) - coordMaxRight;
+        return (difference < coordMaxLeft) ? Direction.RIGHT : Direction.LEFT;
     }
 
     private void updatedShadow() {

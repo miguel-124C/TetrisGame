@@ -25,7 +25,7 @@ public class Tetrimino {
             var cord = original.getCords()[i];
             var x = cord.x;
             var y = cord.y;
-            this.cords[i] = new Coordinate(x, y);
+            this.cords[i] = new Coordinate(x, y, cord.isPivot());
         }
         color = original.getColor();
         tetriminoType = original.getTetriminoType();
@@ -93,6 +93,26 @@ public class Tetrimino {
         }
 
         return men;
+    }
+
+    // Obtiene la coordenada mas cerca a la parte izquierda de la matriz
+    public int getCoordMaxLeft() {
+        int men = Integer.MAX_VALUE;
+        for (var cord : this.cords) {
+            if (cord.x < men) men = cord.x;
+        }
+
+        return men;
+    }
+
+    // Obtiene la coordenada mas cerca a la parte derecha de la matriz
+    public int getCoordMaxRight() {
+        var max = Integer.MIN_VALUE;
+        for (var cord : this.cords) {
+            if (cord.x > max) max = cord.x;
+        }
+
+        return max;
     }
 
     public Coordinate[] getCords() { return cords; }
